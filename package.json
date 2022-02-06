@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "webpack": "webpack",
-    "dev": "npm run webpack -- --mode=development",
-    "prod": "npm run webpack -- --mode=production",
+    "dev": "npm run webpack -- --env=development",
+    "prod": "npm run webpack -- --env=production",
     "debug": "node --inspect --inspect-brk ./node_modules/webpack/bin/webpack.js"
   },
   "repository": {

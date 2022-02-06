@@ -1,3 +1,8 @@
-module.exports = {
-    mode: "none"
+module.exports = (env)=>{
+    return {
+        mode: env,
+        output: {
+            filename: 'bundle.js'
+        }
+    }
 }
