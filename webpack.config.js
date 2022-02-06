@@ -5,8 +5,13 @@ module.exports = (env)=>{
     return {
         mode: env,
         output: {
-            filename: 'bundle.js'
+            filename: '[chunkhash].[name].bundle.js'
         },
-        plugins:[new htmlPlugin(), new webpack.ProgressPlugin()]
+        plugins:[new htmlPlugin(), new webpack.ProgressPlugin()],
+        entry:
+        {
+            one: './src/index.js',
+            two:  './src/index2.js',
+        }
     }
 }
