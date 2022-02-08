@@ -10,8 +10,7 @@ module.exports = (env)=>{
         plugins:[new htmlPlugin(), new webpack.ProgressPlugin()],
         entry:
         {
-            one: './src/index.js',
-            two:  './src/index2.js',
+            shared: ['./src/index.js', './src/index2.js']
         }
     }
 }
