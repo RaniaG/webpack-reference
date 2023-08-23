@@ -148,6 +148,7 @@ ReactDOM.render(<App />, root) ;
 **output:** The output property tells webpack where to emit the bundles it creates and how to name these files.
 **loaders:** Out of the box, webpack only understands JavaScript and JSON files. Loaders allow webpack to process other types of files and convert them into valid modules that can be consumed by your application and added to the dependency graph.
 **plugins:** Plugins do tasks like bundle optimization, asset management and injection of environment variables.
+**modes:** 
 
 ### Loaders:
 loaders have two properties in your webpack configuration:
@@ -167,6 +168,12 @@ module.exports = {
 };
 ```
 when it comes across a path that resolves to a '.txt' file inside of a ```require()/import``` statement, use the raw-loader to transform it before you add it to the bundle.
+
+**inline loaders:**
+another way to use loaders is by using import statements:
+```javascript
+import Styles from 'style-loader!css-loader?modules!./styles.css';
+```
 
 ### Plugins:
 https://webpack.js.org/plugins/ 
