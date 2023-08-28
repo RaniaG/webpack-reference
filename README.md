@@ -143,14 +143,9 @@ import(
 ReactDOM.render(<App />, root) ;
 });
 ```
-### Concepts:
-**entry point:** The starting point/s which webpack uses to begin building the dependency graph
-**output:** The output property tells webpack where to emit the bundles it creates and how to name these files.
-**loaders:** Out of the box, webpack only understands JavaScript and JSON files. Loaders allow webpack to process other types of files and convert them into valid modules that can be consumed by your application and added to the dependency graph.
-**plugins:** Plugins do tasks like bundle optimization, asset management and injection of environment variables.
-**modes:** 
 
 ### Loaders:
+Out of the box, webpack only understands JavaScript and JSON files. Loaders allow webpack to process other types of files and convert them into valid modules that can be consumed by your application and added to the dependency graph.<br />
 loaders have two properties in your webpack configuration:
 
 - The ```test``` property identifies which file or files should be transformed.
@@ -169,15 +164,108 @@ module.exports = {
 ```
 when it comes across a path that resolves to a '.txt' file inside of a ```require()/import``` statement, use the raw-loader to transform it before you add it to the bundle.
 
-**inline loaders:**
+**Inline loaders:**
+<br />
 another way to use loaders is by using import statements:
 ```javascript
 import Styles from 'style-loader!css-loader?modules!./styles.css';
 ```
-
+**Order of loaders execution:**
+<br />
+Loaders are evaluated/executed from right to left (or from bottom to top). <br />
+The first loader passes its result (resource with applied transformations) to the next one, and so forth. Finally, webpack expects JavaScript to be returned by the last loader in the chain.<br />
+In the example below execution starts with sass-loader, continues with css-loader and finally ends with style-loader.
+```javascript
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          { loader: 'style-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+          { loader: 'sass-loader' },
+        ],
+      },
+    ],
+  },
+};
+```
 ### Plugins:
-https://webpack.js.org/plugins/ 
+Plugins are the backbone of webpack. They also serve the purpose of doing anything else that a loader cannot do.
+```javascript
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack'); //to access built-in plugins
 
+module.exports = {
+...,
+  plugins: [
+    new webpack.ProgressPlugin(), //customizes how progress should be reported during compilation
+    new HtmlWebpackPlugin({ template: './src/index.html' }), // will generate a HTML file including the bundeled js file
+  ],
+};
+```
+
+### Entry Point:
+The starting point/s which webpack uses to begin building the dependency graph.<br />
+**Single entry:**
+```javascript
+module.exports = {
+  entry: './path/to/my/entry/file.js',
+};
+```
+**multi-main entry:**
+```javascript
+module.exports = {
+  entry: {
+    main: './src/app.js',
+    vendor: './src/vendor.js',
+  },
+};
+```
+This is useful when you would like to inject multiple dependent files together and graph their dependencies into one "chunk".<br />
+With this, you can import required libraries or files that aren't modified (e.g. Bootstrap, jQuery, images, etc) inside vendor.js and they will be bundled together into their own chunk
+```javascript
+module.exports = {
+  entry: {
+    pageOne: './src/pageOne/index.js',
+    pageTwo: './src/pageTwo/index.js',
+    pageThree: './src/pageThree/index.js',
+  },
+};
+```
+We are telling webpack that we would like 3 separate dependency graphs (like the above example).
+<br />
+this will  create bundles of shared application code between each page. Multi-page applications that reuse a lot of code/modules between entry points can greatly benefit from these techniques, as the number of entry points increases.
+
+### Output: 
+The output property tells webpack where to emit the bundles it creates and how to name these files.<br />
+TBD
+
+### Runtime and Manifest:
+Once your application hits the browser in the form of index.html file, some bundles and a variety of other assets required by your application must be loaded and linked somehow. <br />
+So how does webpack manage the interaction between all of your required modules? <br />
+As the compiler enters, resolves, and maps out your application, it keeps detailed notes on all your modules. <br />
+This collection of data is called the "Manifest," and it's what the runtime will use to resolve and load modules once they've been bundled and shipped to the browser. <br />
+
+### Modules
+Webpack supports the following module types natively without loaders:
+- An ES2015 import statement
+- A CommonJS require() statement
+- An AMD define and require statement
+- An @import statement inside of a css/sass/less file.
+- An image url in a stylesheet url(...) or HTML ```<img src=...>``` file.
+<br />
+**Resolver:**
+A resolver is a library which helps in locating a module by its absolute path.
+
+### Module Federation:
+TBD
 ## Resources
 * [Slides](https://docs.google.com/presentation/d/1RuTDSvfaEFBFQ-3OiyxtuPTaGhv-xv7OG4jt5mpIdUw/edit?usp=sharing)
 https://frontendmasters.com/courses/webpack-fundamentals/ 
@@ -194,4 +282,4 @@ https://createapp.dev/webpack
 https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
 https://webpack.js.org/glossary/
 https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
-
+https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
