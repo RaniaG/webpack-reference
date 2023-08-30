@@ -248,10 +248,26 @@ The output property tells webpack where to emit the bundles it creates and how t
 TBD
 
 ### Runtime and Manifest:
+
+**Runtime:**
+The runtime is the code that runs in the browser to load and connect webpack modules/chunks.<br />
+It contains the loading and resolving logic needed to connect your modules as they interact.<br />
+**Manifest:**
 Once your application hits the browser in the form of index.html file, some bundles and a variety of other assets required by your application must be loaded and linked somehow. <br />
 So how does webpack manage the interaction between all of your required modules? <br />
 As the compiler enters, resolves, and maps out your application, it keeps detailed notes on all your modules. <br />
-This collection of data is called the "Manifest," and it's what the runtime will use to resolve and load modules once they've been bundled and shipped to the browser. <br />
+This collection of data is called the "Manifest" and it's what the runtime will use to resolve and load modules once they've been bundled and shipped to the browser. <br />
+
+### Hot Module Replacement:
+used in dev environment to add/remove modules while the application is running without need for full reload, to speed up development.
+1. The application asks the HMR runtime to check for updates.
+2. the compiler needs to emit an "update" to allow updating from the previous version to the new version. The "update" consists of two parts:
+ - The updated manifest (JSON)
+ - One or more updated chunks (JavaScript)
+3. The runtime asynchronously downloads the updates and notifies the application.
+4. The application then asks the runtime to apply the updates.
+5. The runtime synchronously applies the updates.
+<br />
 
 ### Modules
 Webpack supports the following module types natively without loaders:
@@ -267,8 +283,8 @@ A resolver is a library which helps in locating a module by its absolute path.
 ### Module Federation:
 TBD
 
-### Hot Module Replacement:
-used in dev environment to add/remove modules while the application is running without need for full reload, to speed up development.
+
+
 
 ## Resources
 * [Slides](https://docs.google.com/presentation/d/1RuTDSvfaEFBFQ-3OiyxtuPTaGhv-xv7OG4jt5mpIdUw/edit?usp=sharing)
