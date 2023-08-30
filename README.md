@@ -266,6 +266,10 @@ A resolver is a library which helps in locating a module by its absolute path.
 
 ### Module Federation:
 TBD
+
+### Hot Module Replacement:
+used in dev environment to add/remove modules while the application is running without need for full reload, to speed up development.
+
 ## Resources
 * [Slides](https://docs.google.com/presentation/d/1RuTDSvfaEFBFQ-3OiyxtuPTaGhv-xv7OG4jt5mpIdUw/edit?usp=sharing)
 https://frontendmasters.com/courses/webpack-fundamentals/ 
@@ -283,3 +287,4 @@ https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in
 https://webpack.js.org/glossary/
 https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
 https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
+https://www.toptal.com/javascript/hot-module-replacement-in-redux
