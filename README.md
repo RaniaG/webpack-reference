@@ -173,7 +173,7 @@ import Styles from 'style-loader!css-loader?modules!./styles.css';
 **Order of loaders execution:**
 <br />
 Loaders are evaluated/executed from right to left (or from bottom to top). <br />
-The first loader passes its result (resource with applied transformations) to the next one, and so forth. Finally, webpack expects JavaScript to be returned by the last loader in the chain.<br />
+A chain is executed in reverse order, the first loader passes its result (resource with applied transformations) to the next one, and so forth. Finally, webpack expects JavaScript to be returned by the last loader in the chain.<br />
 In the example below execution starts with sass-loader, continues with css-loader and finally ends with style-loader.
 ```javascript
 module.exports = {
