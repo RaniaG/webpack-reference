@@ -284,8 +284,133 @@ A resolver is a library which helps in locating a module by its absolute path.
 TBD
 
 
+### Source maps
+if you bundle three source files (a.js, b.js, and c.js) into one bundle (bundle.js) and one of the source files contains an error, the stack trace will point to bundle.js <br />
+This isn't always helpful as you probably want to know exactly which source file the error came from.<br/>
+JavaScript offers source maps, which map your compiled code back to your original source code. <br/>If an error originates from b.js, the source map will tell you exactly that.
 
+To configure it we add it to the config file
+```javascript
+ module.exports = {
+   mode: 'development',
+    ...
+  devtool: 'inline-source-map',
+    ...
+ };
+```
+### Development tools
+**watch mode** <br>
+You can instruct webpack to "watch" all files within your dependency graph for changes. If one of these files is updated, the code will be recompiled so you don't have to run the full build manually.<br>
 
+```javascript
+   "scripts": {
+    "watch": "webpack --watch",
+   }
+```
+**webpack-dev-server**<br>
+```
+npm install --save-dev webpack-dev-server
+```
+webpack-dev-server serves bundled files from the directory defined in output.path
+```javascript
+module.exports = {
+   mode: 'development',
+
+   devtool: 'inline-source-map',
+  devServer: {
+    static: './dist',
+  }
+}
+```
+```javascript
+   "scripts": {
+    "start": "webpack serve --open",
+   }
+```
+
+**wepack-dev-middleware**
+webpack-dev-middleware is a wrapper that will emit files processed by webpack to a server. This is used in webpack-dev-server internally, however it's available as a separate package to allow more custom setups if desired.
+```javascript
+// Tell express to use the webpack-dev-middleware and use the webpack.config.js
+// configuration file as a base.
+app.use(
+  webpackDevMiddleware(compiler, {
+    publicPath: config.output.publicPath,
+  })
+);
+```
+### Code Splitting:
+This feature allows you to split your code into various bundles which can then be loaded on demand or in parallel.<br>
+It can be used to achieve smaller bundles and control resource load prioritization which, if used correctly, can have a major impact on load time.
+#### Entry Points: 
+for each entry point we get a new bundle<br>
+***cons***
+- if there are same modules imported in both files, they will be duplicated between both bundles.
+- we cant dynamically split code according to logic.
+
+#### Prevent Duplication
+##### dependOn
+it allows us to share modules between chunks
+```javascript
+  entry: {
+    index: {
+      import: './src/index.js',
+      dependOn: 'shared',
+    },
+    another: {
+      import: './src/another-module.js',
+      dependOn: 'shared',
+    },
+    shared: 'lodash',
+   },
+```
+##### SplitChunksPlugin
+allows us to extract common dependencies into an existing entry chunk or an entirely new chunk.
+```javascript
+  module.exports = {
+    mode: 'development',
+    entry: {
+      index: './src/index.js',
+      another: './src/another-module.js',
+    },
+   optimization: {
+     splitChunks: {
+       chunks: 'all',
+     },
+   },
+  };
+```
+#### Dynamic imports:
+using dynamic imports autimatically allows webpack to split bundles
+```javascript
+async function getComponent() {
+  const element = document.createElement('div');
+  const { default: _ } = await import('lodash');
+
+  element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+
+  return element;
+ }
+
+ getComponent().then((component) => {
+   document.body.appendChild(component);
+ });
+```
+### Prefetching and Preloading
+| Prefetching  | Preloading |
+| ------------- | ------------- |
+| will start loading after parent chunk finishes loading  | will start loading in parallel with the parent chunk  |
+| downloaded when browser is idle  | instantly downloaded with medium priority  |
+
+```javascript
+import(/* webpackPrefetch: true */ './path/to/LoginModal.js');
+import(/* webpackPreload: true */ 'ChartingLibrary');
+```
+
+### Analysis tools:
+https://github.com/webpack/analyse
+https://webpack.jakoblind.no/optimize/
+https://github.com/relative-ci/bundle-stats 
 ## Resources
 * [Slides](https://docs.google.com/presentation/d/1RuTDSvfaEFBFQ-3OiyxtuPTaGhv-xv7OG4jt5mpIdUw/edit?usp=sharing)
 https://frontendmasters.com/courses/webpack-fundamentals/ 
