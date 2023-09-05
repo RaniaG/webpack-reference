@@ -1,3 +1,5 @@
+import _ from "lodash";
 export default function printMe() {
-  alert("I get called from print.js!");
+  const x = _.join(["Hello", "webpack"], " ");
+  alert("I get called from print.js!" + x);
 }
