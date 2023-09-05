@@ -298,6 +298,7 @@ To configure it we add it to the config file
     ...
  };
 ```
+
 ### Development tools
 **watch mode** <br>
 You can instruct webpack to "watch" all files within your dependency graph for changes. If one of these files is updated, the code will be recompiled so you don't have to run the full build manually.<br>
@@ -405,6 +406,55 @@ async function getComponent() {
 ```javascript
 import(/* webpackPrefetch: true */ './path/to/LoginModal.js');
 import(/* webpackPreload: true */ 'ChartingLibrary');
+```
+### Caching optimizations
+**Filenames**<br>
+Webpack provides a method of templating the filenames using bracketed strings called substitutions. The [contenthash] substitution will add a unique hash based on the content of an asset. so when the asset's content changes, [contenthash] will change as well
+```javascript
+  module.exports = {
+    output: {
+     filename: '[name].[contenthash].js',
+    },
+  };
+```
+**Single runtime chunk**<br>
+Creates a single runtime bundle for all chunks:
+
+```javascript
+  optimization: {
+     runtimeChunk: 'single',
+   },
+```
+
+**Group libraries into a single bundle**<br>
+It's also good practice to extract third-party libraries, such as lodash or react, to a separate vendor chunk as they are less likely to change than our local source code.
+```javascript
+module.exports = {
+    entry: './src/index.js',
+    optimization: {
+      runtimeChunk: 'single',
+     splitChunks: {
+       cacheGroups: {
+         vendor: {
+           test: /[\\/]node_modules[\\/]/,
+           name: 'vendors',
+           chunks: 'all',
+         },
+       },
+     },
+    },
+  };
+```
+this will decrease the size of main bundle
+
+**Keeping same hash for vendor modules**<br>
+when our main module changes, we want to preserve the hash for vendor module because its unchanged.
+```javascript
+  module.exports = {
+    optimization: {
+     moduleIds: 'deterministic',
+    }
+}
 ```
 
 ### Analysis tools:
