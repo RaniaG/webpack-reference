@@ -247,6 +247,25 @@ this will  create bundles of shared application code between each page. Multi-pa
 The output property tells webpack where to emit the bundles it creates and how to name these files.<br />
 TBD
 
+#### Output Library/Package:
+when packaging a library we want it to be available when imported by different methods.
+by adding type: 'umd' it is available in CommonJs, AMD, and script tag
+```javascript
+ module.exports = {
+   entry: './src/index.js',
+   output: {
+     path: path.resolve(__dirname, 'dist'),
+     filename: 'library-name.js',
+     globalObject: 'this',
+     library: {
+      name: 'webpackNumbers',
+      type: 'umd',
+     },
+   },
+ };
+```
+
+
 ### Runtime and Manifest:
 
 **Runtime:**
@@ -456,6 +475,46 @@ when our main module changes, we want to preserve the hash for vendor module bec
     }
 }
 ```
+
+### Peer dependency:
+When we dont want external libraries to increase our package bundle size.<br>
+In this case, we'd prefer to treat lodash as a peer dependency. Meaning that the consumer should already have lodash installed.
+```javascript
+  externals: {
+    // Everything that starts with "library/"
+    /^library\/.+$/,
+     lodash: {
+       commonjs: 'lodash',
+       commonjs2: 'lodash',
+       amd: 'lodash',
+       root: '_',
+     },
+   }
+```
+
+### Performance enhancement:
+1. use loaders only to needed modules. our regex should match only needed files inside our src directory
+```javascript
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src'),
+        loader: 'babel-loader',
+      },
+    ],
+```
+2. resolving:
+- Minimize the number of items in resolve.modules, resolve.extensions, resolve.mainFiles, resolve.descriptionFiles, as they increase the number of filesystem calls.
+- Set resolve.symlinks: false if you don't use symlinks (e.g. npm link or yarn link).
+- Set resolve.cacheWithContext: false if you use custom resolving plugins, that are not context specific
+3. The DllPlugin and DllReferencePlugin provide means to split bundles in a way that can drastically improve build time performance. 
+4. Keep chunks small
+- Use fewer/smaller libraries.
+- Use the SplitChunksPlugin in Multi-Page Applications.
+- Use the SplitChunksPlugin in async mode in Multi-Page Applications.
+- Remove unused code.
+- Only compile the part of the code you are currently developing on.
+
 
 ### Analysis tools:
 https://github.com/webpack/analyse
