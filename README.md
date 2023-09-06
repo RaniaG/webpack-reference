@@ -265,6 +265,26 @@ by adding type: 'umd' it is available in CommonJs, AMD, and script tag
  };
 ```
 
+### Tree shaking
+You can imagine your application as a tree. The source code and libraries you actually use represent the green, living leaves of the tree. Dead code represents the brown, dead leaves of the tree that are consumed by autumn. In order to get rid of the dead leaves, you have to shake the tree, causing them to fall.
+#### Problem with CommonJS modules
+CommonJS has a require() function that fetches an external module based on the path provided, and it adds it to the scope during runtime.<br>
+That require is a function like any other in a program makes it hard enough to evaluate its call outcome at compile-time. On top of that is the fact that adding require calls anywhere in the code is possible — wrapped in another function call, within if/else statements, in switch statements, etc.
+
+#### ES6 Solution
+the ESM specification has settled on this new architecture, in which modules are imported and exported by the respective keywords import and export. <br>
+Therefore, no more functional calls. <br>
+ESMs are also allowed only as top-level declarations — nesting them in any other structure is not possible, being as they are static: ESMs do not depend on runtime execution.
+
+#### Side Effects 
+Bundlers serve their purpose by evaluating the code provided as much as possible in order to determine whether a module is pure. But code evaluation during compiling time or bundling time can only go so far. <br>
+Therefore, it’s assumed that packages with side effects cannot be properly eliminated, even when completely unreachable.
+<br> <br>
+Because of this, bundlers now accept a key inside the module’s package.json file that allows the developer to declare whether a module has no side effects. This way, the developer can opt out of code evaluation and hint the bundler; the code within a particular package can be eliminated if there’s no reachable import or require statement linking to it. 
+<br>
+This can speedup up compile time.
+
+TBC
 
 ### Runtime and Manifest:
 
@@ -515,6 +535,7 @@ In this case, we'd prefer to treat lodash as a peer dependency. Meaning that the
 - Remove unused code.
 - Only compile the part of the code you are currently developing on.
 
+TBC
 
 ### Analysis tools:
 https://github.com/webpack/analyse
@@ -538,3 +559,4 @@ https://webpack.js.org/glossary/
 https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
 https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
 https://www.toptal.com/javascript/hot-module-replacement-in-redux
+https://www.smashingmagazine.com/2021/05/tree-shaking-reference-guide/
