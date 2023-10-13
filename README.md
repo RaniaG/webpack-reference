@@ -588,8 +588,9 @@ module.exports = {
     };
 ```
 <br>
-9. TypeScript Loader:<br>
-To improve the build time when using ts-loader, use the transpileOnly loader option. On its own, this option turns off type checking. To gain type checking again, use the ForkTsCheckerWebpackPlugin. This speeds up TypeScript type checking and ESLint linting by moving each to a separate process.
+8. TypeScript Loader:<br>
+To improve the build time when using ts-loader, use the transpileOnly loader option. On its own, this option turns off type checking. To gain type checking again, use the ForkTsCheckerWebpackPlugin. This speeds up TypeScript type checking and ESLint linting by moving each to a separate process.<br>
+
 ```javascript
 module.exports = {
   test: /\.tsx?$/,
@@ -603,8 +604,11 @@ module.exports = {
   ],
 };
 ```
+<br>
+
 refer to: https://github.com/TypeStrong/ts-loader/tree/main/examples/fork-ts-checker-webpack-plugin <br>
-10. Some tools cause performance degradation in production:
+
+9. Some tools cause performance degradation in production:
 - Babel: Minimize the number of preset/plugins
 - TypeScript:
   - Use the fork-ts-checker-webpack-plugin for typechecking in a separate process.
