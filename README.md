@@ -269,12 +269,33 @@ by adding type: 'umd' it is available in CommonJs, AMD, and script tag
 You can imagine your application as a tree. The source code and libraries you actually use represent the green, living leaves of the tree. Dead code represents the brown, dead leaves of the tree that are consumed by autumn. In order to get rid of the dead leaves, you have to shake the tree, causing them to fall.
 #### Problem with CommonJS modules
 CommonJS has a require() function that fetches an external module based on the path provided, and it adds it to the scope during runtime.<br>
-That require is a function like any other in a program makes it hard enough to evaluate its call outcome at compile-time. On top of that is the fact that adding require calls anywhere in the code is possible — wrapped in another function call, within if/else statements, in switch statements, etc.
+That require is a function like any other in a program makes it hard enough to evaluate its call outcome at compile-time. On top of that is the fact that adding require calls anywhere in the code is possible — wrapped in another function call, within if/else statements, in switch statements, etc.<br>
+For example, the statement `let firstName = getName()` has side effects, because the call to `getName()` can not be removed without changing the meaning of the code, even if nothing needs firstName. ⁣⁣
 
 #### ES6 Solution
 the ESM specification has settled on this new architecture, in which modules are imported and exported by the respective keywords import and export. <br>
 Therefore, no more functional calls. <br>
-ESMs are also allowed only as top-level declarations — nesting them in any other structure is not possible, being as they are static: ESMs do not depend on runtime execution.
+ESMs are also allowed only as top-level declarations — nesting them in any other structure is not possible, being as they are static: ESMs do not depend on runtime execution.<br>
+For example, the statement `let firstName = 'Jane'` has no side effects because the statement can be removed without any observed difference if nothing needs firstName.<br>
+Only modules defined with the ES2015 module syntax `(import and export)` can be tree-shaken.<br>
+Tree shaking starts by visiting all parts of the entry point file with side effects, and proceeds to traverse the edges of the graph until new sections are reached. Once the traversal is completed, the JavaScript bundle includes only the parts that were reached during the traversal. The other pieces are left out.<br>
+In the following case only the read function is added to the bundle and the nap function is excluded.
+```javascript
+export function read(props) {⁣⁣
+    return props.book⁣⁣
+}⁣⁣
+⁣⁣
+export function nap(props) {⁣⁣
+   return props.winks⁣⁣
+}⁣⁣
+```
+```javascript
+import { read } from 'utilities';⁣⁣
+⁣⁣
+eventHandler = (e) => {⁣⁣
+  read({ book: e.target.value })⁣⁣
+}⁣⁣
+```
 
 #### Side Effects 
 Bundlers serve their purpose by evaluating the code provided as much as possible in order to determine whether a module is pure. But code evaluation during compiling time or bundling time can only go so far. <br>
@@ -543,20 +564,21 @@ https://webpack.jakoblind.no/optimize/
 https://github.com/relative-ci/bundle-stats 
 ## Resources
 * [Slides](https://docs.google.com/presentation/d/1RuTDSvfaEFBFQ-3OiyxtuPTaGhv-xv7OG4jt5mpIdUw/edit?usp=sharing)
-https://frontendmasters.com/courses/webpack-fundamentals/ 
-https://blog.ag-grid.com/webpack-tutorial-understanding-how-it-works/
-https://medium.com/@cgcrutch18/commonjs-what-why-and-how-64ed9f31aa46
-https://nodejs.org/docs/latest/api/modules.html
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
-https://requirejs.org/docs/whyamd.html
-https://stackoverflow.com/questions/24581873/what-exactly-is-hot-module-replacement-in-webpack
-https://javascript.info/modules-dynamic-imports
-https://github.com/ronami/minipack/blob/master/src/minipack.js
-https://github.com/TheLarkInn/compare-webpack-target-bundles
-https://createapp.dev/webpack
-https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
-https://webpack.js.org/glossary/
-https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
-https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
-https://www.toptal.com/javascript/hot-module-replacement-in-redux
-https://www.smashingmagazine.com/2021/05/tree-shaking-reference-guide/
+- https://frontendmasters.com/courses/webpack-fundamentals/ 
+- https://blog.ag-grid.com/webpack-tutorial-understanding-how-it-works/
+- https://medium.com/@cgcrutch18/commonjs-what-why-and-how-64ed9f31aa46
+- https://nodejs.org/docs/latest/api/modules.html
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+- https://requirejs.org/docs/whyamd.html
+- https://stackoverflow.com/questions/24581873/what-exactly-is-hot-module-replacement-in-webpack
+- https://javascript.info/modules-dynamic-imports
+- https://github.com/ronami/minipack/blob/master/src/minipack.js
+- https://github.com/TheLarkInn/compare-webpack-target-bundles
+- https://createapp.dev/webpack
+- https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
+- https://webpack.js.org/glossary/
+- https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
+- https://stackoverflow.com/questions/42523436/what-are-module-chunk-and-bundle-in-webpack
+- https://www.toptal.com/javascript/hot-module-replacement-in-redux
+- https://www.smashingmagazine.com/2021/05/tree-shaking-reference-guide/
+- https://www.patterns.dev/posts/introduction
