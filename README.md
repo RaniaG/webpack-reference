@@ -572,7 +572,6 @@ Certain utilities, plugins, and loaders only make sense when building for produc
 Webpack does extra algorithmic work to optimize the output for size and load performance. These optimizations are performant for smaller codebases, but can be costly in larger ones:
 ```javascript
 module.exports = {
-  // ...
   optimization: {
     removeAvailableModules: false,
     removeEmptyChunks: false,
@@ -588,11 +587,11 @@ module.exports = {
       },
     };
 ```
+<br>
 9. TypeScript Loader:<br>
 To improve the build time when using ts-loader, use the transpileOnly loader option. On its own, this option turns off type checking. To gain type checking again, use the ForkTsCheckerWebpackPlugin. This speeds up TypeScript type checking and ESLint linting by moving each to a separate process.
 ```javascript
 module.exports = {
-  // ...
   test: /\.tsx?$/,
   use: [
     {
