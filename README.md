@@ -581,14 +581,13 @@ module.exports = {
 };
 ```
 7. Output Without Path Info:
-   ```javascript
+```javascript
    module.exports = {
-  // ...
-  output: {
-    pathinfo: false,
-  },
-};
-   ```
+      output: {
+        pathinfo: false,
+      },
+    };
+```
 9. TypeScript Loader:<br>
 To improve the build time when using ts-loader, use the transpileOnly loader option. On its own, this option turns off type checking. To gain type checking again, use the ForkTsCheckerWebpackPlugin. This speeds up TypeScript type checking and ESLint linting by moving each to a separate process.
 ```javascript
@@ -605,7 +604,7 @@ module.exports = {
   ],
 };
 ```
-refer to: https://github.com/TypeStrong/ts-loader/tree/main/examples/fork-ts-checker-webpack-plugin 
+refer to: https://github.com/TypeStrong/ts-loader/tree/main/examples/fork-ts-checker-webpack-plugin <br>
 10. Some tools cause performance degradation in production:
 - Babel: Minimize the number of preset/plugins
 - TypeScript:
