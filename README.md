@@ -400,6 +400,10 @@ app.use(
   })
 );
 ```
+The following utilities improve performance by compiling and serving assets in memory rather than writing to disk:
+- webpack-dev-server
+- webpack-hot-middleware
+- webpack-dev-middleware
 ### Code Splitting:
 This feature allows you to split your code into various bundles which can then be loaded on demand or in parallel.<br>
 It can be used to achieve smaller bundles and control resource load prioritization which, if used correctly, can have a major impact on load time.
@@ -534,7 +538,7 @@ In this case, we'd prefer to treat lodash as a peer dependency. Meaning that the
 ```
 
 ### Performance enhancement:
-1. use loaders only to needed modules. our regex should match only needed files inside our src directory
+1. Use loaders only to needed modules. our regex should match only needed files inside our src directory
 ```javascript
     rules: [
       {
@@ -544,20 +548,72 @@ In this case, we'd prefer to treat lodash as a peer dependency. Meaning that the
       },
     ],
 ```
-2. resolving:
+2. Resolving:<br>
 - Minimize the number of items in resolve.modules, resolve.extensions, resolve.mainFiles, resolve.descriptionFiles, as they increase the number of filesystem calls.
 - Set resolve.symlinks: false if you don't use symlinks (e.g. npm link or yarn link).
 - Set resolve.cacheWithContext: false if you use custom resolving plugins, that are not context specific
 3. The DllPlugin and DllReferencePlugin provide means to split bundles in a way that can drastically improve build time performance. 
-4. Keep chunks small
+4. Keep chunks small<br>
 - Use fewer/smaller libraries.
 - Use the SplitChunksPlugin in Multi-Page Applications.
 - Use the SplitChunksPlugin in async mode in Multi-Page Applications.
 - Remove unused code.
 - Only compile the part of the code you are currently developing on.
 
-TBC
+5. Avoid Production Specific Tooling<br>
+Certain utilities, plugins, and loaders only make sense when building for production. For example, it usually doesn't make sense to minify and mangle your code with the TerserPlugin while in development.<br> These tools should typically be excluded in development:
 
+- TerserPlugin
+- AggressiveSplittingPlugin
+- AggressiveMergingPlugin
+- ModuleConcatenationPlugin
+
+6. Avoid Extra Optimization Steps<br>
+Webpack does extra algorithmic work to optimize the output for size and load performance. These optimizations are performant for smaller codebases, but can be costly in larger ones:
+```javascript
+module.exports = {
+  // ...
+  optimization: {
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+    splitChunks: false,
+  },
+};
+```
+7. Output Without Path Info:
+   ```javascript
+   module.exports = {
+  // ...
+  output: {
+    pathinfo: false,
+  },
+};
+   ```
+9. TypeScript Loader:<br>
+To improve the build time when using ts-loader, use the transpileOnly loader option. On its own, this option turns off type checking. To gain type checking again, use the ForkTsCheckerWebpackPlugin. This speeds up TypeScript type checking and ESLint linting by moving each to a separate process.
+```javascript
+module.exports = {
+  // ...
+  test: /\.tsx?$/,
+  use: [
+    {
+      loader: 'ts-loader',
+      options: {
+        transpileOnly: true,
+      },
+    },
+  ],
+};
+```
+refer to: https://github.com/TypeStrong/ts-loader/tree/main/examples/fork-ts-checker-webpack-plugin 
+10. Some tools cause performance degradation in production:
+- Babel: Minimize the number of preset/plugins
+- TypeScript:
+  - Use the fork-ts-checker-webpack-plugin for typechecking in a separate process.
+  - Configure loaders to skip typechecking.
+  - Use the ts-loader in happyPackMode: true / transpileOnly: true.
+- node-sass: has a bug which blocks threads from the Node.js thread pool. When using it with the thread-loader set workerParallelJobs: 2
+  
 ### Analysis tools:
 https://github.com/webpack/analyse
 https://webpack.jakoblind.no/optimize/
