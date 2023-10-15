@@ -297,6 +297,57 @@ eventHandler = (e) => {⁣⁣
 }⁣⁣
 ```
 
+#### usedExports:
+usedExports relies on terser to detect side effects in statements. It is a difficult task in JavaScript and not as effective as straightforward sideEffects flag. It also can't skip subtree/dependencies since the spec says that side effects need to be evaluated.
+
+```javascript
+//inside webpack config
+ optimization: {
+   usedExports: true,
+ }
+```
+This options marks unused exports but doesn't actually remove it from the output bundle.<br>
+For example:<br>
+The following square function was exported but wasn't imported anywhere, but its still generated in the output bundle.
+```javascript
+/* 1 */
+/***/ (function (module, __webpack_exports__, __webpack_require__) {
+  'use strict';
+  /* unused harmony export square */
+  /* harmony export (immutable) */ __webpack_exports__['a'] = cube;
+  function square(x) {
+    return x * x;
+  }
+
+  function cube(x) {
+    return x * x * x;
+  }
+});
+```
+**Problem with Higher order components:** 
+While exporting function works fine, React's Higher Order Components (HOC) are problematic in this regard.
+```javascript
+var Button$1 = withAppProvider()(Button);
+
+export {
+  // ...,
+  Button$1,
+};
+```
+When Button is unused you can effectively remove the export { Button$1 }; which leaves all the remaining code. So the question is "Does this code have any side effects or can it be safely removed?". Difficult to say, especially because of this line withAppProvider()(Button).
+<br/>
+<br/>
+Are there any side effects when calling withAppProvider? Terser actually tries to figure it out, but it doesn't know for sure in many cases.
+<br/>
+<br/>
+But we can help terser by using the `/*#__PURE__*/` annotation. It flags a statement as side effect free. So a small change would make it possible to tree-shake the code:
+```javascript
+var Button$1 = /*#__PURE__*/ withAppProvider()(Button);
+```
+This would allow to remove this piece of code. But there are still questions with the imports which need to be included/evaluated because they could contain side effects.
+<br><br>
+To tackle this, we use the "sideEffects" property in package.json.
+
 #### Side Effects 
 Bundlers serve their purpose by evaluating the code provided as much as possible in order to determine whether a module is pure. But code evaluation during compiling time or bundling time can only go so far. <br>
 Therefore, it’s assumed that packages with side effects cannot be properly eliminated, even when completely unreachable.
@@ -304,8 +355,23 @@ Therefore, it’s assumed that packages with side effects cannot be properly eli
 Because of this, bundlers now accept a key inside the module’s package.json file that allows the developer to declare whether a module has no side effects. This way, the developer can opt out of code evaluation and hint the bundler; the code within a particular package can be eliminated if there’s no reachable import or require statement linking to it. 
 <br>
 This can speedup up compile time.
+Example package.json:
+```javascript
+{
+  "name": "your-project",
+  "sideEffects": false
+}
+```
+It's similar to `/*#__PURE__*/` but on a module level instead of a statement level. It says ("sideEffects" property): "If no direct export from a module flagged with no-sideEffects is used, the bundler can skip evaluating the module for side effects.".
+<br><br>
+we can indicate that some of the files have side effects by listing them in an array:
+```javascript
+{
+  "name": "your-project",
+  "sideEffects": ["./src/some-side-effectful-file.js"]
+}
+```
 
-TBC
 
 ### Runtime and Manifest:
 
