@@ -96,6 +96,9 @@ import(modulePath)
 - Allows you to use in the browser
 - Supports static async bundling to use lazy loading
 
+<br>The whole concept behind webpack is to allow more modular front-end development. <br>
+This means writing isolated modules that are well contained and do not rely on hidden dependencies (e.g. globals).
+
 ### How the bundling process works:
 1. Each file is a module (js, ts, css, html ..)
 2. When we import files into each other we create a dependency graph
@@ -371,6 +374,9 @@ we can indicate that some of the files have side effects by listing them in an a
   "sideEffects": ["./src/some-side-effectful-file.js"]
 }
 ```
+
+#### production mode:
+When setting `mode: production` it will enable the terser plugin which will remove dead code, it will also enable `ModuleConcatenationPlugin` which is needed for tree shaking to work.
 
 
 ### Runtime and Manifest:
@@ -681,6 +687,47 @@ refer to: https://github.com/TypeStrong/ts-loader/tree/main/examples/fork-ts-che
   - Configure loaders to skip typechecking.
   - Use the ts-loader in happyPackMode: true / transpileOnly: true.
 - node-sass: has a bug which blocks threads from the Node.js thread pool. When using it with the thread-loader set workerParallelJobs: 2
+ 
+### Production vs Development:
+| Development  | Production |
+| ------------- | ------------- |
+| strong source mapping    | lighter weight source maps  |
+| a localhost server with live reloading or hot module replacement  | minified bundles and optimized assets to improve load time  |
+<br>
+its better to keep two separate configuration for each environment and to merge them using `webpack-merge` package<br>
+
+```javascript
+ |- webpack.common.js
+ |- webpack.dev.js
+ |- webpack.prod.js
+```
+
+```javascript
+ const { merge } = require('webpack-merge');
+ const common = require('./webpack.common.js');
+
+ module.exports = merge(common, {
+    mode: 'production',
+    devtool: 'source-map',
+ });
+```
+
+the use of merge() calls in the environment-specific configurations to include our common configuration in webpack.dev.js and webpack.prod.js<br>
+afterwards we can use these configuration with different scripts:
+```javascript
+    "scripts": {
+     "start": "webpack serve --open --config webpack.dev.js",
+     "build": "webpack --config webpack.prod.js"
+    },
+```
+> Avoid inline-*** and eval-*** use in production as they can increase bundle size and reduce the overall performance.
+
+### Shimming:
+Why does webpack need shimming concept:
+- some third party libraries may expect global dependencies (e.g. $ for jQuery). The libraries might also create globals which need to be exported.
+- when you want to polyfill browser functionality to support more users. In this case, you may only want to deliver those polyfills to the browsers that need patching (i.e. load them on demand).
+
+TBC
   
 ### Analysis tools:
 https://github.com/webpack/analyse
