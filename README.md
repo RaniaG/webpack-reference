@@ -722,13 +722,76 @@ afterwards we can use these configuration with different scripts:
 ```
 > Avoid inline-*** and eval-*** use in production as they can increase bundle size and reduce the overall performance.
 
+### Ployfills: 
+A script that updates/adds new functions is called “polyfill”. It “fills in” the gap and adds missing implementations.<br>
+New language features may include not only syntax constructs and operators, but also built-in functions.<br>
+For example, Math.trunc(n) is a function that “cuts off” the decimal part of a number.<br>
+In some (very outdated) JavaScript engines, there’s no Math.trunc, so such code will fail.<br>
+As we’re talking about new functions, not syntax changes, there’s no need to transpile anything here. We just need to declare the missing function.
+
 ### Shimming:
+Making some variables available globally or adding extra functionality for browser support.
 Why does webpack need shimming concept:
 - some third party libraries may expect global dependencies (e.g. $ for jQuery). The libraries might also create globals which need to be exported.
 - when you want to polyfill browser functionality to support more users. In this case, you may only want to deliver those polyfills to the browsers that need patching (i.e. load them on demand).
 
-TBC
-  
+***1. Shimming globals:***
+The `ProvidePlugin` makes a package available as a variable in every module compiled through webpack. <br>
+If webpack sees that variable used, it will include the given package in the final bundle.<br>
+Instead of importing lodash in every file, we can use ProviderPlugin and use lodash directly as `_`
+
+```javascript
+const path = require('path');
+const webpack = require('webpack');
+
+ module.exports = {
+   entry: './src/index.js',
+   output: {
+     filename: 'main.js',
+     path: path.resolve(__dirname, 'dist'),
+   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      _: 'lodash',
+    }),
+  ],
+ };
+```
+***2. Provide window for a package or script:***
+if we want this variable to correspond to window object for a specific script, we can use `imports-loader`
+```javascript
+  module: {
+    rules: [
+      {
+        test: require.resolve('./src/index.js'),
+        use: 'imports-loader?wrapper=window',
+      },
+    ],
+  },
+```
+***3. Global variables:***
+If we want some variables exported from a script or a package to be available globally, we can use `exports-loader`
+```javascript
+      {
+        test: require.resolve('./src/globals.js'),
+        use:
+          'exports-loader?type=commonjs&exports=file,multiple|helpers.parse|parse',
+      },
+```
+***4. Polyfills:***
+We can create a polyfills file and add it as an entry point, and include all the used polyfills.
+```javascript
+//polyfills.js
+import 'babel-polyfill';
+import 'whatwg-fetch';
+```
+```javascript
+  entry: {
+    polyfills: './src/polyfills',
+    index: './src/index.js',
+  },
+```
+
 ### Analysis tools:
 https://github.com/webpack/analyse
 https://webpack.jakoblind.no/optimize/
@@ -753,3 +816,4 @@ https://github.com/relative-ci/bundle-stats
 - https://www.toptal.com/javascript/hot-module-replacement-in-redux
 - https://www.smashingmagazine.com/2021/05/tree-shaking-reference-guide/
 - https://www.patterns.dev/posts/introduction
+- https://javascript.info/polyfills
