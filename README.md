@@ -268,6 +268,165 @@ by adding type: 'umd' it is available in CommonJs, AMD, and script tag
  };
 ```
 
+### Asset modules:
+Loaders are usually used for asset management: <br>
+Prior to webpack 5 it was common to use:
+
+- `raw-loader` to import a file as a string
+- `url-loader` to inline a file into the bundle as a data URI
+- `file-loader` to emit a file into the output directory
+
+Asset Modules types replace all of these loaders by adding 4 new module types:<br>
+
+- `asset/resource` emits a separate file and exports the URL. Previously achievable by using file-loader.
+- `asset/inline` exports a data URI of the asset. Previously achievable by using url-loader.
+- `asset/source` exports the source code of the asset. Previously achievable by using raw-loader.
+- `asset` automatically chooses between exporting a data URI and emitting a separate file. Previously achievable by using url-loader with asset size limit.
+
+When using the old assets loaders (i.e. file-loader/url-loader/raw-loader) along with Asset Modules in webpack 5, you might want to stop Asset Modules from processing your assets again as that would result in asset duplication. This can be done by setting the asset's module type to 'javascript/auto'. <br>
+
+#### asset/resource:
+Files will be emitted to the output directory and their paths will be injected into the bundles
+```javascript
+ module: {
+   rules: [
+     {
+       test: /\.png/,
+       type: 'asset/resource'
+     }
+   ]
+ },
+```
+```javascript
+import mainImage from './images/main.png';
+img.src = mainImage;
+```
+the mainImage above will be bundled as ` /dist/151cfcfa1bd74779aadb.png`
+<br><br>
+if we want to customize the output path for the assets we can use `publicPath` which allows us to specify base path for all assets.
+```javascript
+export default {
+  output: {
+    publicPath: process.env.ASSET_PATH,
+  },
+};
+```
+we can also define the name for the asset module output filename, or we can define specific output filename for a specific resource type
+```javascript
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+   assetModuleFilename: 'images/[hash][ext][query]'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.png/,
+        type: 'asset/resource'
+     },
+     {
+       test: /\.html/,
+       type: 'asset/resource',
+       generator: {
+         filename: 'static/[hash][ext][query]'
+       }
+     }
+    ]
+  },
+```
+#### asset/inline:
+Files will be injected into the bundles as data URI.
+```javascript
+  module: {
+    rules: [
+      {
+       test: /\.svg/,
+       type: 'asset/inline'
+     }
+    ]
+}
+```
+```javascript
+import metroMap from './images/metro.svg';
+block.style.background = `url(${metroMap})`;
+```
+metroMap will be replaced by `url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo...vc3ZnPgo=)`
+<br>
+we can also change the base64 encoding into any other encoding:
+```javascript
+const svgToMiniDataURI = require('mini-svg-data-uri');
+
+module.exports = {
+...
+  module: {
+    rules: [
+      {
+        test: /\.svg/,
+        type: 'asset/inline',
+       generator: {
+         dataUrl: content => {
+           content = content.toString();
+           return svgToMiniDataURI(content);
+         }
+       }
+      }
+    ]
+  },
+};
+```
+#### assets/source:
+Files will be injected into the bundles as is.
+```javascript
+module: {
+    rules: [
+      {
+       test: /\.txt/,
+       type: 'asset/source',
+      }
+    ]
+  }
+```
+```javascript
+ import exampleText from './example.txt';
+ block.textContent = exampleText; 
+```
+exampleText will be bundled as 'Hello world' (the content of example.txt)
+
+#### asset:
+This will allow webpack to automatically choose between `resource` and `inline` by following a default condition: a file with size less than 8kb will be treated as a inline module type and resource module type otherwise.<br>
+
+We can change this condition by setting a Rule.parser.dataUrlCondition.maxSize option on the module rule level of your webpack configuration:
+```javascript
+module: {
+    rules: [
+      {
+        test: /\.txt/,
+        type: 'asset',
+       parser: {
+         dataUrlCondition: {
+           maxSize: 4 * 1024 // 4kb
+         }
+       }
+      }
+    ]
+  },
+```
+#### disable emitting assets:
+For use cases like Server side rendering, you might want to disable emitting assets
+```javascript
+module: {
+    rules: [
+      {
+        test: /\.png$/i,
+        type: 'asset/resource',
+        generator: {
+          emit: false,
+        },
+      },
+    ],
+  },
+```
+
 ### Tree shaking
 You can imagine your application as a tree. The source code and libraries you actually use represent the green, living leaves of the tree. Dead code represents the brown, dead leaves of the tree that are consumed by autumn. In order to get rid of the dead leaves, you have to shake the tree, causing them to fall.
 #### Problem with CommonJS modules
